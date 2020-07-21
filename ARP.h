@@ -161,5 +161,87 @@ void dumpLogFile(char * fileName)  {
       fclose(fp);
 
       // Print the line to screen
-      printf("%s",buff);
+      printf("%s\n\n",buff);
 } 
+
+
+/*
+        while (1) {
+            fd_set rfds;
+            struct timeval tv;
+            struct timespec tv2;
+            int retval, m,n;
+         
+            FD_ZERO(&rfds);
+            FD_SET(fd1[0], &rfds);
+            FD_SET(fd2[0], &rfds);
+            
+            if(fd1[0]>fd2[0])
+               Nselect=fd1[0];
+            else
+               Nselect=fd2[0];
+            tv.tv_sec = 2;
+            tv.tv_usec = 0;
+            retval = select(Nselect+1, &rfds, NULL, NULL, &tv);
+            
+            if (retval == -1)   
+               perror("select()");
+            else if (retval) {   
+               printf("Data is available now.\n");
+               if (FD_ISSET(fd1[0], &rfds)){ // Sn
+                  n = read(fd1[0], &actualToken, sizeof(actualToken));
+                  printf("Received from pipe 1: %d\n",n);
+               }
+               
+               if (FD_ISSET(fd2[0], &rfds)){ //Gn
+                  n = read(fd2[0], &actualToken, sizeof(actualToken));
+                 printf("Received from pipe 2: %d\n",n);
+               }
+               if (FD_ISSET(fd1[0], &rfds) && FD_ISSET(fd2[0], &rfds)){
+                  int randomN = rand() % 2;
+                  if(randomN==0){
+                     n = read(fd1[0], &actualToken, sizeof(actualToken));
+                     printf("Received from pipe 1: %d\n",n);
+                  }
+                  else if(randomN==1){
+                     n = read(fd2[0], &actualToken, sizeof(actualToken));
+                     printf("Received from pipe 2: %d\n",n);
+                  }
+               }
+            }
+             else   
+                printf("No data within 5 seconds.\n");
+         }
+*/
+
+
+
+/*-------------------------------------Socket (client) initialization---------------------------*/
+/*         // Create socket
+         float line;
+         int m;
+         float q;
+         sleep(2);
+         int sockfd, portno;
+         struct sockaddr_in serv_addr;
+         struct hostent *server;
+         portno = atoi(targ2);
+         sockfd = socket(AF_INET, SOCK_STREAM, 0);
+         if (sockfd < 0)
+            error("ERROR opening socket");
+         server = gethostbyname("localhost");
+         if (server == NULL)
+            error("ERROR, no such host\n");
+         bzero((char *)&serv_addr, sizeof(serv_addr));
+         serv_addr.sin_family = AF_INET;
+         bcopy((char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length);
+         serv_addr.sin_port = htons(portno);
+         if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+            error("ERROR connecting");
+         float temp = 1;
+         m = write(sockfd, &line, sizeof(line));
+         if (m < 0)
+            error("ERROR writing to socket");
+*/
+/*------------------------------------------------------------------------------------------------------*/
+
