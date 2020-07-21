@@ -139,6 +139,7 @@ int main (int argc, char *argv[]) {          // ---> Sn
          waitpid(Gn,0,0); // wait for Gn
          printf("\n\nPn code pt2, pid = %d\n", getpid());
          
+         // MOVED L HERE ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
          // Create Ln
          Ln=fork();   
 
@@ -149,7 +150,7 @@ int main (int argc, char *argv[]) {          // ---> Sn
          }
 
          else if(Ln>0){
-            
+
             for(int i=0; i<1; i++){
                float tokenFromG;
 
@@ -157,7 +158,7 @@ int main (int argc, char *argv[]) {          // ---> Sn
                clock_t start, end;
                start=clock();
 
-               //IMPLEMENT SELECT HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
+               //IMPLEMENT SELECT HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                
                // Read from pipe1 (Sn->Pn)
                double dataSnToPn[2];
