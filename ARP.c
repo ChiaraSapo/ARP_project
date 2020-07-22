@@ -63,13 +63,16 @@ int main (int argc, char *argv[]) {          // ---> Sn
    Writes data on pipe to Pn                         (v)
    Creates Pn                                        (v)
 */
-   
-   // Creation of the pipes
-   pipe(fd1); // Sn <---> Pn   freq,ip,waitTime
-   pipe(fd2); // Gn <---> Pn   token
-   pipe(fd3); // Pn <---> Ln   token
+
+
+   /*-----------------------------------Sn----------------------------*/
 
    printf("\nSn code, pid = %d\n", getpid());
+   
+   // Creation of the pipes
+   pipe(fd1); // Sn <---> Pn   freq,ip,waitTime,signal
+   pipe(fd2); // Gn <---> Pn   token
+   pipe(fd3); // Pn <---> Ln   token
 
    // Link signals to signal handler
    signal(SIGCONT, sig_handler);
@@ -78,7 +81,7 @@ int main (int argc, char *argv[]) {          // ---> Sn
    double DT[1]; /////////////////////////////////////////////////
    
    // Start socket
-   //start_fileserver_tcp();
+   //start_fileserver_tcp(); !!!!!!!!!!!!!!!!!!!!
    
    // Read config file
    char * fileName="config_file.cfg";
@@ -100,9 +103,11 @@ int main (int argc, char *argv[]) {          // ---> Sn
 
    dataFromSn[3]=signalReceived;
    
-   // Write on pipe1 frequency and IP
-   int ctr=write(fd1[1], dataFromSn , sizeof(double)*4);  
-
+   for(int k=0; k<loops; k++){
+      // Write on pipe1 frequency and IP
+      write(fd1[1], dataFromSn , sizeof(double)*4);  
+   }
+   
    // Creation Sn-->Pn
    Pn = fork(); 
 
@@ -163,7 +168,7 @@ int main (int argc, char *argv[]) {          // ---> Sn
          printf("\n\nPn code pt2, pid = %d\n", getpid());
          
 
-         for(int i=0; i<1; i++){
+         for(int i=0; i<loops; i++){
             
             float tokenFromG;
 
@@ -290,7 +295,8 @@ int main (int argc, char *argv[]) {          // ---> Sn
             */
          
             printf("\n\nLn code, pid = %d\n", getpid());
-            for(int j=0;j<1;j++){
+
+            for(int j=0;j<loops;j++){
                // Reads what to write on log file: put after log
                double dataFromPn[3];
                read(fd3[0], dataFromPn, sizeof(double)*2); // Ln reads from pipe fd2

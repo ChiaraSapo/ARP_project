@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include "ARP.h"
 
 
 void error(const char *msg)
@@ -81,27 +82,28 @@ int main (int argc, char *argv[]) {
             error("ERROR reading from socket");
 
         ///////
-*/
-        float receivedToken=0.5; // Read from socket!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*/      for(int i; i<loops; i++){
+            float receivedToken=0.5; // Read from socket!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        // G has received token
-        if(receivedToken==0){
-            tokenToSend=computeOriginalToken(-1,1);
+            // G has received token
+            if(receivedToken==0){
+                tokenToSend=computeOriginalToken(-1,1);
+            }
+
+            // G has found pipe empty
+            else{
+                tokenToSend=receivedToken;
+            }
+            
+            printf("\n\nGn code, pid = %d\n", getpid());
+            printf("Token to send: %f\n", tokenToSend);
+
+            // write on pipe
+            write(atoi(argv[2]), &tokenToSend,sizeof(tokenToSend));  //write on the pipe to child2
+            
+            if (ctr < 0)
+                error("ERROR writing to socket");
         }
-
-        // G has found pipe empty
-        else{
-            tokenToSend=receivedToken;
-        }
-        
-        printf("\n\nGn code, pid = %d\n", getpid());
-        printf("Token to send: %f\n", tokenToSend);
-
-        // write on pipe
-        int ctr=write(atoi(argv[2]), &tokenToSend,sizeof(tokenToSend));  //write on the pipe to child2
-        if (ctr < 0)
-            error("ERROR writing to socket");
-        
     //}
     //close(newsockfd);
     //close(sockfd);
