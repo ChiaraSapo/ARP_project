@@ -165,6 +165,105 @@ void dumpLogFile(char * fileName)  {
 } 
 
 
+
+
+/*
+// Function to host a socket connection as a server
+int start_fileserver_tcp()
+{
+    host = gethostbyname(My_IP);
+    server_port = atoi(My_PORT);
+
+    // socket descriptor
+    tcp_host_socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (tcp_host_socket_fd == -1)
+    {
+        fprintf(stderr, "[ERROR] Failed to create socket: %s\n", strerror(errno));
+
+        return EXIT_FAILURE;
+    }
+
+    sockaddr_size = sizeof(struct sockaddr);
+    // zeroise the sockaddr structure
+    bzero(&server_address, sockaddr_size);
+
+    server_address.sin_family = AF_INET; // AF_INET is the protocol IPv4
+    server_address.sin_addr = *((struct in_addr *)host->h_addr_list[0]);
+    server_address.sin_port = htons(server_port);
+
+    if (bind(tcp_host_socket_fd, (struct sockaddr *)&server_address, sockaddr_size) == -1)
+    {
+        fprintf(stderr, "[ERROR] Failed to bind socket: %s\n", strerror(errno));
+
+        return EXIT_FAILURE;
+    }
+
+    if (listen(tcp_host_socket_fd, MAX_QUEUE_CONNECTIONS) == -1)
+    {
+        fprintf(stderr, "[ERROR] Failed to listen socket: %s\n", strerror(errno));
+
+        return EXIT_FAILURE;
+    }
+
+    client_sockaddr_size = sizeof(struct sockaddr);
+
+    // Listen for a connection and accept if some
+    client_sock_fd = accept(tcp_host_socket_fd, (struct sockaddr *)&client_address, &client_sockaddr_size);
+    if (client_sock_fd == -1)
+    {
+        fprintf(stderr, "[ERROR] Failed to accept socket: %s\n", strerror(errno));
+
+        return EXIT_FAILURE;
+    }
+
+    printf("Connection stablished :)\n");
+
+    //Send a first random number to verify the connection. This one won't be printed
+    x = x + 0.1;
+    char buf[BUFFER_SIZE];
+
+    gcvt(x, 6, buf);
+
+    strcpy(output_buffer, buf);
+
+    if (send(client_sock_fd, output_buffer, strlen(output_buffer) + 1, 0) == -1)
+    {
+        fprintf(stderr, "[ERROR] Failed sending message: %s\n", strerror(errno));
+    }
+}
+
+// Function to wstablish a connection via socket connection as a client
+int connect_fileserver_tcp()
+{
+    host = gethostbyname("localhost");
+    server_port = atoi("1502");
+
+    // socket descriptor
+    tcp_client_socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (tcp_client_socket_fd == -1)
+    {
+        fprintf(stderr, "[ERROR] Failed to create socket: %s\n", strerror(errno));
+
+        return EXIT_FAILURE;
+    }
+
+    sockaddr_size = sizeof(struct sockaddr);
+    // zeroise the sockaddr structure
+    bzero(&server_address, sockaddr_size);
+
+    server_address.sin_family = AF_INET;
+    server_address.sin_addr = *((struct in_addr *)host->h_addr_list[0]);
+    server_address.sin_port = htons(server_port);
+
+    if (connect(tcp_client_socket_fd, (struct sockaddr *)&server_address, sockaddr_size) == -1)
+    {
+        fprintf(stderr, "[ERROR] Failed to connect socket: %s\n", strerror(errno));
+
+        return EXIT_FAILURE;
+    }
+}
+*/
+
 /*
         while (1) {
             fd_set rfds;
@@ -182,6 +281,7 @@ void dumpLogFile(char * fileName)  {
                Nselect=fd2[0];
             tv.tv_sec = 2;
             tv.tv_usec = 0;
+            
             retval = select(Nselect+1, &rfds, NULL, NULL, &tv);
             
             if (retval == -1)   
