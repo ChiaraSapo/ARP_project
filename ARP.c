@@ -20,8 +20,12 @@ pid_t Ln;
 // Variables for pipes
 int fd1[2], fd2[2], fd3[2];
 
+// Variables for signals
+bool start=0;
 bool stop=0; // If set: stop receiving token
 bool dumpLog=0; // If set: dump log
+int signalReceived; //start, sto, log 
+
 double * dataFromConfig;
 
 void sig_handler(int sig)
@@ -31,8 +35,7 @@ void sig_handler(int sig)
       printf("SIGCONT received, pid = %d\n", getpid());
       kill(Pn,sig);
       kill(Gn,sig);
-      //printf("Stop equal to %d\n",stop);
-      //signal (SIGCONT, SIG_DFL); //the default response is defined again
+      start=1;
    }
 
    if ( sig == SIGUSR1) // Stop receiving
@@ -40,6 +43,7 @@ void sig_handler(int sig)
       printf("Stop signal received, pid = %d\n", getpid());
       kill(Pn,SIGSTOP);
       kill(Gn,SIGSTOP);
+      stop=1;
    }
 
    if (sig == SIGUSR2) // Dump log
@@ -72,13 +76,32 @@ int main (int argc, char *argv[]) {          // ---> Sn
    signal(SIGUSR1, sig_handler);
    signal(SIGUSR2, sig_handler); //log signal
    double DT[1]; /////////////////////////////////////////////////
-
+   
+   // Start socket
+   //start_fileserver_tcp();
+   
    // Read config file
    char * fileName="config_file.cfg";
    dataFromConfig=read_config(fileName); // freq,IP
+   double dataFromSn[4];
+   dataFromSn[0]=dataFromConfig[0];
+   dataFromSn[1]=dataFromConfig[1];
+   dataFromSn[2]=dataFromConfig[2];
+
+   // Check signals
+   if (start==1)
+      signalReceived=1;
+   else if (stop==1)
+      signalReceived=2;
+   else if (stop==1)
+      signalReceived=3;
+   else 
+      signalReceived=0;
+
+   dataFromSn[3]=signalReceived;
    
    // Write on pipe1 frequency and IP
-   int ctr=write(fd1[1], dataFromConfig , sizeof(double)*3);  
+   int ctr=write(fd1[1], dataFromSn , sizeof(double)*4);  
 
    // Creation Sn-->Pn
    Pn = fork(); 
@@ -139,39 +162,83 @@ int main (int argc, char *argv[]) {          // ---> Sn
          waitpid(Gn,0,0); // wait for Gn
          printf("\n\nPn code pt2, pid = %d\n", getpid());
          
-         // MOVED L HERE ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-         // Create Ln
-         Ln=fork();   
 
-         // Control on the fork           
-         if (Ln < 0){
-            perror("Fork error");
-            return -1;
-         }
+         for(int i=0; i<1; i++){
+            
+            float tokenFromG;
 
-         else if(Ln>0){
+            // Measure time 
+            clock_t start, end;
+            start=clock();
+            
+            // Select for pipe1
+            double dataSnToPn[4];
+            double dataPnToLn[3];
+            dataPnToLn[2]=0;
+            double freqFromConfig;
+            fd_set rfds;
+            struct timeval tv;
+            int retval;
+            FD_ZERO(&rfds);
+            FD_SET(fd1[0], &rfds);
+            tv.tv_sec = 2;
+            tv.tv_usec = 0;
+            
+            retval = select(FD_SETSIZE, &rfds, NULL, NULL, &tv);
+            
+            if (retval == -1)   
+               perror("select()");
 
-            for(int i=0; i<1; i++){
-               float tokenFromG;
+            else if (retval) {   
 
-               // Measure time 
-               clock_t start, end;
-               start=clock();
+               printf("Data available in pipe1\n");
 
-               //IMPLEMENT SELECT HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-               
-               // Read from pipe1 (Sn->Pn)
-               double dataSnToPn[2];
                int ctr2=read(fd1[0],dataSnToPn,sizeof(double)*3);
                
                // Save data (easier to read)
-               double freqFromConfig=dataSnToPn[0];
+               freqFromConfig=dataSnToPn[0];
                int IPFromConfig=dataSnToPn[1];
                double waitTimeFromConfig=dataSnToPn[2];
+               double signalFromSn=dataSnToPn[3];
+
+               if(signalFromSn==0)
+                  printf("\nNo signal");
+               if(signalFromSn==1)
+                  printf("\nStart");
+               if(signalFromSn==2)
+                  printf("\nStop");
+               if(signalFromSn==3)
+                  printf("\nLog");
+                  dataPnToLn[2]=1;
+
                DT[0]=waitTimeFromConfig;         
 
-               printf("Dataread from config file in Pn:\n    Freq: %f, IP: %d, WaitTime: %f\n", freqFromConfig , IPFromConfig ,waitTimeFromConfig);
+               printf("Dataread from Sn in Pn:\n    Freq: %f, IP: %d, WaitTime: %f, \n", freqFromConfig , IPFromConfig ,waitTimeFromConfig);
+            }
+            else   
+                printf("No data within 5 seconds.\n");
             
+
+
+            // Select for pipe2
+            fd_set rfds1;
+            struct timeval tv1;
+            int retval1;
+            FD_ZERO(&rfds1);
+            FD_SET(fd2[0], &rfds1);
+            tv1.tv_sec = 2;
+            tv1.tv_usec = 0;
+            
+            retval1 = select(FD_SETSIZE, &rfds1, NULL, NULL, &tv1);
+            
+            if (retval1 == -1)   
+               perror("select()");
+
+            else if (retval1) {   
+               
+               printf("Data available in pipe1\n");
+
+               // Read pipe2 (Gn->Pn)
                int nb=read(fd2[0], &tokenFromG, sizeof(tokenFromG));
                printf("Token received: %f\n",tokenFromG);
                
@@ -182,7 +249,8 @@ int main (int argc, char *argv[]) {          // ---> Sn
 
 
                // SOCKET TO GN+1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-               
+               //tm->tm_hour, tm->tm_min, tm->tm_sec, tv2.tv_usec
+
 
                // Measure again time after socket and update DT
                end = clock()-start;
@@ -191,16 +259,28 @@ int main (int argc, char *argv[]) {          // ---> Sn
                printf("DT is equal to: %f\n", DT[i]);
 
                // Prepare for Ln
-               double dataPnToLn[2];
+               
                dataPnToLn[0]=tokenFromG; 
                dataPnToLn[1]=newToken;
                
                // Write on pipe 3 what to write on log file
-               write(fd3[1], dataPnToLn, sizeof(double)*2); // Pn writes to pipe fd2
+               write(fd3[1], dataPnToLn, sizeof(double)*3); // Pn writes to pipe fd2
             }
+            else   
+                printf("No data within 5 seconds.\n");
          }
+         
 
          /*-----------------------------------Ln----------------------------*/
+
+         // Create Ln
+         Ln=fork();   
+
+         // Control on the fork           
+         if (Ln < 0){
+            perror("Fork error");
+            return -1;
+         }
 
          else if  (Ln==0){    // ---> Ln
             /* Ln
@@ -212,13 +292,14 @@ int main (int argc, char *argv[]) {          // ---> Sn
             printf("\n\nLn code, pid = %d\n", getpid());
             for(int j=0;j<1;j++){
                // Reads what to write on log file: put after log
-               double dataFromPn[2];
+               double dataFromPn[3];
                read(fd3[0], dataFromPn, sizeof(double)*2); // Ln reads from pipe fd2
                printf("Tokens in Ln:\n    Old token: %f, new token:%f\n\n\n",dataFromPn[0],dataFromPn[1]);
 
                char * logFileName = "log.txt";
                writeLogFile(logFileName, dataFromPn[0], dataFromPn[1]);
-               dumpLogFile(logFileName);
+               if (dataFromPn[2]==1)
+                  dumpLogFile(logFileName);
             }
 
          }
