@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
    signal(SIGCONT, sig_handler);
    signal(SIGUSR1, sig_handler);
    signal(SIGUSR2, sig_handler); //log signal
-   double DT[1];
+
    // Read config file
 
    char *fileName = "config_file.cfg";
@@ -92,8 +92,10 @@ int main(int argc, char *argv[])
    int ctrSn = 0;
    for (int k = 0; k < loops; k++)
       ctrSn = write(fd1[1], dataFromSn, sizeof(double) * 4);
-   if (ctrSn >= 0)
-      printf("    Sn has written on pipe1\n");
+   if (ctrSn < 0)
+      printf("    No data sent from S to P");
+   else
+      printf("    Pipe written  from S to P\n\n");
 
    // Creation Sn-->Pn
    Pn = fork();
@@ -136,8 +138,15 @@ int main(int argc, char *argv[])
          // Exec to get code of Gn
          char *fname1 = "./G";
          arg[0] = fname1; // Name of executable
-         execvp(fname1, arg);
+         if (execvp(fname1, arg) < 0)
+            printf("EXEC FAILED\n");
+         else
+         {
+            printf("Exec good\n");
+         }
+
          perror("Exec function of G");
+         perror("exec failed");
       }
 
       /*-----------------------------------Pn----------------------------*/
@@ -232,7 +241,7 @@ int main(int argc, char *argv[])
                end = clock() - start;
                double time_taken = ((double)end) / CLOCKS_PER_SEC; // in seconds
                DT[i + 1] = DT[i] + time_taken;
-               printf("    DT is equal to: %f\n", DT[i]);
+               printf("    DT is equal to: %f\n\n", DT[i]);
 
                // Prepare for Ln
 
@@ -240,7 +249,11 @@ int main(int argc, char *argv[])
                dataPnToLn[1] = newToken;
 
                // Write on pipe 3 what to write on log file
-               write(fd3[1], dataPnToLn, sizeof(double) * 3); // Pn writes to pipe fd2
+               int ctr = write(fd3[1], dataPnToLn, sizeof(double) * 3); // Pn writes to pipe fd2
+               if (ctr < 0)
+                  printf("    No data sent from P to L");
+               else
+                  printf("    Pipe written from P to L\n\n");
             }
             else
                printf("    No data within 5 seconds in pipe2.\n");
@@ -272,12 +285,13 @@ int main(int argc, char *argv[])
             {
                // Reads what to write on log file: put after log
                double dataFromPn[3];
-               // Select for pipe2
+
+               // Select for pipe3
                fd_set rfds3;
                struct timeval tv3;
                int retval3;
                FD_ZERO(&rfds3);
-               FD_SET(fd2[0], &rfds3);
+               FD_SET(fd3[0], &rfds3);
                tv3.tv_sec = 2;
                tv3.tv_usec = 0;
 

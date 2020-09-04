@@ -22,9 +22,8 @@
 #define M_PI 3.14159265358979323846
 #define FILE_LINE_LENGH 69
 
-int loops = 1;
-
-
+int loops = 2;
+double DT[2];
 // FUNCTIONS NEEDED BY MAIN CODE
 
 /* Reads config file
@@ -79,7 +78,7 @@ double *read_config(char *fileName)
             data[1] = ip;
         }
 
-        // Look for the wait time
+        // Look for the IP
         else if (!strncmp(buffer, "WaitTime=", WAIT_LEN))
         {
             char *num_start = buffer + WAIT_LEN;

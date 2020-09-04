@@ -16,11 +16,11 @@
 #include <fcntl.h>
 #include "ARP.h"
 
-void error(const char *msg)
+/*void error(const char *msg)
 {
     perror(msg);
     exit(1);
-}
+}*/
 
 float computeOriginalToken(const float min, const float max)
 {
@@ -36,13 +36,17 @@ int main(int argc, char *argv[])
 {
 
     float tokenToSend;
+    int socket_available = 1;
 
-    for (int i; i < loops; i++)
+    printf("\n\nGn code, pid = %d\n", getpid());
+
+    for (int i = 0; i < loops; i++)
     {
+        //printf("Socket available\n");
         float receivedToken = 0.5; // Read from socket!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         // G has received token
-        if (receivedToken == 0)
+        if (socket_available == 0)
         {
             tokenToSend = computeOriginalToken(-1, 1);
         }
@@ -53,13 +57,14 @@ int main(int argc, char *argv[])
             tokenToSend = receivedToken;
         }
 
-        printf("\n\nGn code, pid = %d\n", getpid());
         printf("    Token to send: %f\n", tokenToSend);
 
         // write on pipe
         int ctr = write(atoi(argv[2]), &tokenToSend, sizeof(tokenToSend)); //write on the pipe to child2
         if (ctr < 0)
-            printf("No data sent from G");
+            printf("    No data sent from G to P");
+        else
+            printf("    Pipe written from G to P\n\n");
     }
     //}
     //close(newsockfd);
