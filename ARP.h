@@ -22,8 +22,8 @@
 #define M_PI 3.14159265358979323846
 #define FILE_LINE_LENGH 69
 
-int loops = 2;
-double DT[2];
+int loops = 1000;
+double DT[1000];
 // FUNCTIONS NEEDED BY MAIN CODE
 
 /* Reads config file
