@@ -24,6 +24,7 @@
 
 int loops = 1;
 
+
 // FUNCTIONS NEEDED BY MAIN CODE
 
 /* Reads config file
@@ -78,7 +79,7 @@ double *read_config(char *fileName)
             data[1] = ip;
         }
 
-        // Look for the IP
+        // Look for the wait time
         else if (!strncmp(buffer, "WaitTime=", WAIT_LEN))
         {
             char *num_start = buffer + WAIT_LEN;
