@@ -1,6 +1,6 @@
 /*  gcc G.c -o G
     gcc ARP.c -o ARP
-    '/home/chiara/try/ARP'
+    ./ARP
 */
 
 #include "ARP.h"
