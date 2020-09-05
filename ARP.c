@@ -18,7 +18,7 @@ bool start = 0;
 bool stop = 0;      // If set: stop receiving token
 bool dumpLog = 1;   // If set: dump log
 int signalReceived; //start, sto, log
-double *dataFromConfig;
+
 void sig_handler(int sig)
 {
    if (sig == SIGCONT) // Restart receving
@@ -45,7 +45,7 @@ void sig_handler(int sig)
 }
 
 int main(int argc, char *argv[])
-{ // ---> Sn
+{
    /* Sn:
    Handles signals                                   (x)
    Reads config file                                 (v)
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
    signal(SIGUSR2, sig_handler); //log signal
 
    // Read config file
-
+   double *dataFromConfig;
    char *fileName = "config_file.cfg";
    dataFromConfig = read_config(fileName);
    double dataFromSn[4];
@@ -138,15 +138,8 @@ int main(int argc, char *argv[])
          // Exec to get code of Gn
          char *fname1 = "./G";
          arg[0] = fname1; // Name of executable
-         if (execvp(fname1, arg) < 0)
-            printf("EXEC FAILED\n");
-         else
-         {
-            printf("Exec good\n");
-         }
-
+         execvp(fname1, arg);
          perror("Exec function of G");
-         perror("exec failed");
       }
 
       /*-----------------------------------Pn----------------------------*/
@@ -329,7 +322,6 @@ int main(int argc, char *argv[])
 
                   if (dataFromPn[2] == 3)
                      dumpLogFile(logFileName);
-                  //printf("Cycle %d", j);
                }
 
                else
