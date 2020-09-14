@@ -42,6 +42,8 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < loops; i++)
     {
+        // Read socket: CLIENT
+        //socket_client();
         //printf("Socket available\n");
         float receivedToken = 0.5; // Read from socket!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -51,7 +53,7 @@ int main(int argc, char *argv[])
             tokenToSend = computeOriginalToken(-1, 1);
         }
 
-        // G has found pipe empty
+        // G has found socket empty
         else
         {
             tokenToSend = receivedToken;
@@ -59,16 +61,13 @@ int main(int argc, char *argv[])
 
         printf("    Token to send: %f\n", tokenToSend);
 
-        // write on pipe
+        // Write on pipe
         int ctr = write(atoi(argv[2]), &tokenToSend, sizeof(tokenToSend)); //write on the pipe to child2
         if (ctr < 0)
             printf("    No data sent from G to P");
         else
             printf("    Pipe written from G to P\n\n");
     }
-    //}
-    //close(newsockfd);
-    //close(sockfd);
 
     return 0;
 }
