@@ -7,11 +7,15 @@ Everything is implemented on a single machine all processes, simulating a distri
 - G: Receives tokens, sends them to P.
 - L: Writes log file.
 
+Pipes:
+- S-P: Data: Frequency, IP, waitingTime, signalReceived.
+- G-P: Data: Token. 
+- P-L: Data: oldToken, newToken, dumpLogSignal.
 ## Files
 
 ### ARP.C and ARP.h
 Each machine contains 4 Posix processes:
-- P: Receives tokens, computes and sends an updated token after a given delay. Computation: new token = received token + DT x (1. - (received token)^2/2) x 2 pi x RF. Connected to S through pipe (RW). Connected to G through pipe (RW)and through socket (W). Connected to L through pipe (W).
+- P: Receives tokens, computes and sends an updated token after a given delay. Computation: new token = received token + DT x (1. - (received token)^2/2) x 2 pi x RF. Connected to S through pipe (RW). Connected to G through pipe (RW)and through socket (W). Connected to L through pipe (W). 
 - S: Receives conseole messages as Posix signals. Signals are for carrying out the following actions:
   - start (receiving tokens, computing, sending tokens)
   - stop ((receiving tokens, computing, sending tokens)
@@ -20,8 +24,39 @@ Each machine contains 4 Posix processes:
 
 Note: The token is a floating point number between [-1,+1] + time stamp with absolute time of when P writes on the socket. 
 
+What I did:
+
+S: 
+- Creates pipes (S-P, G-P, P-L).
+- Links signals to the right signal handler. 
+- Reads the config file (Freq, IP, waiting time).
+- **Checks for a signal and saves it. Does it make sense?**
+- Writes Freq, IP, waitingTime, signalReceived on pipeS-P.
+- Forks to create P
+
+P:
+- **Create socket: TODO and to move after**
+- Forks to create G
+- If there is data on pipeS-P: read it.
+- If there is data on pipeG-P: 
+  - read it. 
+  - Compute new token
+  - **Write to G through socket**
+  - Measure time and update DT
+  - Write oldToken, newToken to pipeP-L
+- Fork to create L 
+ 
+L:
+- Read pipeP-L
+- Write log file
+- If requested by the signal: dump log
+ 
 ### G.c
 G: Receives tokens, sends them to P.
+
+What I did:
+- **read socket**
+- Send token on pipe G-P
 
 
 ### Config file
