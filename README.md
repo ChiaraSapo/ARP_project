@@ -11,6 +11,15 @@ Pipes:
 - S-P: Data: Frequency, IP, waitingTime, signalReceived.
 - G-P: Data: Token. 
 - P-L: Data: oldToken, newToken, dumpLogSignal.
+
+
+To run: 
+cd try
+gcc ARP.c -o ARP
+gcc G.c -o G
+./ARP
+
+
 ## Files
 
 ### ARP.C and ARP.h
