@@ -4,6 +4,8 @@
 */
 
 #include "ARP.h"
+#define PARAM_SERVER_PORT 7891
+#define PARAM_SERVER_ADDRESS "127.0.0.1"
 
 // Processes' IDs
 pid_t Pn;
@@ -112,8 +114,6 @@ int main(int argc, char *argv[])
 
       printf("\n\nPn code pt1, pid = %d\n", getpid());
 
-      // Write to G through socket: SERVER
-      //socket_server();
 
       // Prepare to create Gn
       char *arg[4];
@@ -238,6 +238,60 @@ int main(int argc, char *argv[])
                printf("    New token calculated in Pn: %f\n", newToken);
 
                // SOCKET TO GN+1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+               /*****************************************socket*********************************/               
+               // Write to G through socket: SERVER
+               int Socket, newSocket;
+               //double buffer;
+               struct sockaddr_in serverAddr;
+               struct sockaddr_storage serverStorage;
+               socklen_t addr_size;
+
+               /*---Create the socket. The three arguments are:---*/
+               // 1) Internet domain 2) Stream socket 3) Default protocol
+               Socket = socket(AF_INET, SOCK_STREAM, 0); //0 sets the defoult protocol
+
+               /*---Configure settings of the server address struct ---*/
+               //Adress family = Internet
+               serverAddr.sin_family = AF_INET;
+               //Set port number, using htons function
+               serverAddr.sin_port = htons(PARAM_SERVER_PORT);
+               //Set IP address to localhost
+               //serverAddr.sin_addr.s_addr = inet_addr(line[1]);
+               serverAddr.sin_addr.s_addr = inet_addr(PARAM_SERVER_ADDRESS);
+               //Set all bits of the padding field to 0
+               memset(serverAddr.sin_zero, '\0', sizeof(serverAddr.sin_zero));
+
+               /*---Bind the address struct to the socket---*/
+               bind(Socket, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
+
+               /*--- Listen on the socket, with 5 max connection requests queued---*/
+               if(listen(Socket, 5) == 0)
+               {
+                     printf("Listening\n%s:%d\n",PARAM_SERVER_ADDRESS, PARAM_SERVER_PORT);
+                  }
+               else
+               {
+                  printf("Error\n");
+               }
+
+               /*---Accept call creates a new socket for the incoming connection---*/
+               addr_size = sizeof(serverStorage);
+               newSocket = accept(Socket, (struct sockaddr *) &serverStorage, &addr_size);
+
+               /*--- Send message to the socket of the incoming connection ---*/
+               //buffer = 1.543;
+               send(newSocket,&newToken,sizeof(newToken),0);
+
+
+               ////--------------------SE send() NON VA, PROVA : write() -----------------///////////////
+               /*****************************************socket*********************************/
+
+
+
+
+
+
+
                //tm->tm_hour, tm->tm_min, tm->tm_sec, tv2.tv_usec
 
                // Measure again time after socket and update DT
