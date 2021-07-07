@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     FILE *logname;
     char buffer_LP[buffer_size], buffer_SP[buffer_size];
     ssize_t token_from_G, action, dumplog, comm_value;
-    int first = 0; // If set: first loop of the machine
+    int first = 0; // If set to zero: first loop of the machine
 
     // Select Variables declaration
     fd_set rfds_P, rfds_S, wfds_S;
